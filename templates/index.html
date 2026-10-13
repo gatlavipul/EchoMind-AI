@@ -1,0 +1,873 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EchoMind AI — Your second brain, now in motion.</title>
+  <meta name="description" content="Autonomous personal cognitive workspace with voice capture, persistent Qdrant semantic memory, and Lyzr agent orchestration.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="shell">
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- SIDEBAR NAVIGATION                                         -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brandmark">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+          <line x1="12" x2="12" y1="19" y2="22"/>
+        </svg>
+      </div>
+      <div>
+        <b>EchoMind AI</b>
+        <small>AUTONOMOUS WORKSPACE</small>
+      </div>
+    </div>
+
+    <div class="nav-section-label">WORKSPACE</div>
+    <button class="nav-item active" data-view="overview" id="nav-overview">
+      <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span>Command Center</span>
+    </button>
+    <button class="nav-item" data-view="voice" id="nav-voice">
+      <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+      <span>Voice Inbox</span>
+      <span class="nav-pill">Multi-Source</span>
+    </button>
+    <button class="nav-item" data-view="vault" id="nav-vault">
+      <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      <span>Memory Vault</span>
+      <span class="nav-counter" id="navMemoryCount">{{ memories|length }}</span>
+    </button>
+    <button class="nav-item" data-view="workflows" id="nav-workflows">
+      <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      <span>Agent Workflows</span>
+      <span class="nav-counter" id="navWorkflowCount">{{ workflows|length }}</span>
+    </button>
+    <button class="nav-item" data-view="tasks" id="nav-tasks">
+      <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      <span>Action Items</span>
+      <span class="nav-counter" id="navTaskCount">{{ tasks|length }}</span>
+    </button>
+    <button class="nav-item" data-view="settings" id="nav-settings">
+      <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      <span>Diagnostics</span>
+    </button>
+
+    <div class="side-bottom">
+      <div class="system-status-indicator">
+        <span class="int-dot {{ 'dot-on' if (qdrant and lyzr) else 'dot-amber' }}"></span>
+        <div class="status-meta">
+          <b>{{ 'Fully Connected' if (qdrant and lyzr) else 'Hybrid Verified' }}</b>
+          <small>{{ 'Cloud + Agent Live' if (qdrant and lyzr) else 'Local Fallbacks Active' }}</small>
+        </div>
+      </div>
+      <div class="user-meta">
+        <div class="user-avatar">EM</div>
+        <div>
+          <b>Solo Builder</b>
+          <small>HiDevs Hackathon</small>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MOBILE TOPBAR -->
+  <div class="mobile-topbar" id="mobileTopbar">
+    <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle navigation">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+    <b class="mobile-brand">EchoMind AI</b>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- MAIN CONTENT AREA                                           -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <main class="main-content">
+
+    <!-- ═════════════════════════════════════════════════════════ -->
+    <!-- VIEW: COMMAND CENTER (MAIN WORKSPACE)                     -->
+    <!-- ═════════════════════════════════════════════════════════ -->
+    <div id="view-overview" class="view-panel active">
+      <!-- HEADER -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <div class="eyebrow">AUTONOMOUS COGNITIVE COMMAND CENTER</div>
+          <h1 class="page-title">EchoMind <span class="gradient-text">Command Center</span></h1>
+          <p class="page-subtitle">Your second brain, now in motion — Capture, Remember, Ask, and Act.</p>
+        </div>
+        <div class="status-badges" id="serviceBadgesStrip">
+          <div class="s-badge" id="badgeOmi" title="Omi conversation ingestion status">
+            <span class="s-dot {{ 'green' if service_states.omi.state == 'verified' else ('amber' if service_states.omi.state == 'setup_required' else 'blue') }}"></span>
+            <span>Omi: <b>{{ service_states.omi.label }}</b></span>
+          </div>
+          <div class="s-badge" id="badgeQdrant" title="Qdrant vector memory status">
+            <span class="s-dot {{ 'green' if service_states.qdrant.state == 'verified' else ('amber' if service_states.qdrant.state == 'setup_required' else 'blue') }}"></span>
+            <span>Qdrant: <b>{{ service_states.qdrant.label }}</b></span>
+          </div>
+          <div class="s-badge" id="badgeLyzr" title="Lyzr agent reasoning status">
+            <span class="s-dot {{ 'green' if service_states.lyzr.state == 'verified' else ('amber' if service_states.lyzr.state == 'setup_required' else 'blue') }}"></span>
+            <span>Lyzr: <b>{{ service_states.lyzr.label }}</b></span>
+          </div>
+        </div>
+      </header>
+
+      <!-- 1. THREE FUNDAMENTAL QUESTIONS ANSWERED IMMEDIATELY -->
+      <section class="command-questions-bar">
+        <div class="q-card">
+          <div class="q-icon">🎯</div>
+          <div class="q-content">
+            <span class="q-label">WHAT CAN I DO?</span>
+            <p>Capture thoughts & audio, recall persistent semantic context, reason via autonomous Lyzr agents, and govern actionable tasks.</p>
+          </div>
+        </div>
+        <div class="q-card">
+          <div class="q-icon">🧠</div>
+          <div class="q-content">
+            <span class="q-label">WHAT DOES ECHOMIND REMEMBER?</span>
+            <p><b id="ccMemoryCount">{{ memories|length }}</b> indexed memories across Omi conversations, speech dictation, notes, and decisions.</p>
+          </div>
+        </div>
+        <div class="q-card">
+          <div class="q-icon">⚡</div>
+          <div class="q-content">
+            <span class="q-label">WHAT ACTION CAN I TAKE NEXT?</span>
+            <p><b id="ccPendingTaskCount">{{ tasks|length }}</b> pending tasks. Review proposed agent items below, approve tasks, or run an autonomous prompt.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. GUIDED FIRST-RUN EXPERIENCE (WIZARD) -->
+      <section class="setup-wizard-card" id="setupWizardCard">
+        <div class="setup-wizard-head">
+          <div class="setup-title">
+            <span class="wizard-sparkle">🚀</span>
+            <div>
+              <b>Guided First-Run Setup Experience</b>
+              <small>Complete the 5-step journey or explore with verified local demo mode</small>
+            </div>
+          </div>
+          <div class="setup-progress-wrap">
+            <div class="setup-progress-bar"><div class="setup-progress-fill" id="setupProgressFill" style="width: {{ setup_progress.percentage }}%"></div></div>
+            <span class="setup-progress-label" id="setupProgressLabel">{{ setup_progress.completed_count }}/5 Steps ({{ setup_progress.percentage }}%)</span>
+            <button type="button" class="btn btn-ghost-sm" id="toggleWizardBtn">Minimize</button>
+          </div>
+        </div>
+
+        <div class="setup-steps-grid" id="setupStepsGrid">
+          <!-- STEP 1: OMI -->
+          <div class="step-card {{ 'done' if setup_progress.steps[0].status == 'completed' }}" data-step="step_1">
+            <div class="step-badge">01</div>
+            <b>Omi Ingestion</b>
+            <p>Connect Omi Wearable or choose one-click transcript dialogue import.</p>
+            <div class="step-actions">
+              <button type="button" class="btn btn-outline-sm" id="wizardStep1Btn">⚡ Load Dialogue</button>
+            </div>
+          </div>
+
+          <!-- STEP 2: QDRANT -->
+          <div class="step-card {{ 'done' if setup_progress.steps[1].status == 'completed' }}" data-step="step_2">
+            <div class="step-badge">02</div>
+            <b>Qdrant Vectors</b>
+            <p>Verify 384-dim semantic embeddings and Cosine vector search.</p>
+            <div class="step-actions">
+              <button type="button" class="btn btn-outline-sm" id="wizardStep2Btn">Verify Vectors</button>
+            </div>
+          </div>
+
+          <!-- STEP 3: LYZR -->
+          <div class="step-card {{ 'done' if setup_progress.steps[2].status == 'completed' }}" data-step="step_3">
+            <div class="step-badge">03</div>
+            <b>Lyzr Agent</b>
+            <p>Test Lyzr Agent Studio contract or local planning fallback.</p>
+            <div class="step-actions">
+              <button type="button" class="btn btn-outline-sm" id="wizardStep3Btn">Verify Agent</button>
+            </div>
+          </div>
+
+          <!-- STEP 4: IMPORT SAMPLE -->
+          <div class="step-card {{ 'done' if setup_progress.steps[3].status == 'completed' }}" data-step="step_4">
+            <div class="step-badge">04</div>
+            <b>Seed Vault</b>
+            <p>Normalize and index sample conversation into memory vault.</p>
+            <div class="step-actions">
+              <button type="button" class="btn btn-outline-sm" id="wizardStep4Btn">Index Sample</button>
+            </div>
+          </div>
+
+          <!-- STEP 5: FIRST ASK -->
+          <div class="step-card {{ 'done' if setup_progress.steps[4].status == 'completed' }}" data-step="step_5">
+            <div class="step-badge">05</div>
+            <b>Run First Ask</b>
+            <p>Ask a contextual question and review proposed action items.</p>
+            <div class="step-actions">
+              <button type="button" class="btn btn-accent-sm" id="wizardStep5Btn">Run Test Ask →</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="setup-footer-notice">
+          <span class="badge-mode-pill">Local Demo Mode Verified</span>
+          <small>Zero mandatory external dependencies to test. Real Qdrant Cloud and Lyzr Studio keys can be added to <code>.env</code> at any time.</small>
+          <button type="button" class="btn btn-ghost-sm" id="resetSetupBtn" style="margin-left:auto;">Reset Checklist</button>
+        </div>
+      </section>
+
+      <!-- 3. CENTRAL WORKFLOW: CAPTURE → REMEMBER → ASK → ACT -->
+      <section class="story-pipeline-card">
+        <div class="story-header">
+          <div class="story-title">
+            <span class="pulse-indicator"></span>
+            <b>Central Interaction Loop: Capture → Remember → Ask → Act</b>
+          </div>
+          <span class="story-status-text" id="storyPipelineStatus">Standby · Enter a prompt or capture speech to execute</span>
+        </div>
+        <div class="story-steps">
+          <div class="story-step ready" id="wf-step-1">
+            <div class="step-num">01</div>
+            <div class="step-body">
+              <b>Capture</b>
+              <small>Omi webhook, speech mic, or transcript</small>
+            </div>
+            <span class="step-badge-pill" id="badge-step-1">Ready</span>
+          </div>
+          <div class="story-connector">→</div>
+          <div class="story-step ready" id="wf-step-2">
+            <div class="step-num">02</div>
+            <div class="step-body">
+              <b>Remember</b>
+              <small>384-dim semantic vector memory</small>
+            </div>
+            <span class="step-badge-pill" id="badge-step-2">Indexed</span>
+          </div>
+          <div class="story-connector">→</div>
+          <div class="story-step standby" id="wf-step-3">
+            <div class="step-num">03</div>
+            <div class="step-body">
+              <b>Ask</b>
+              <small>Lyzr agent multi-stage reasoning</small>
+            </div>
+            <span class="step-badge-pill" id="badge-step-3">Standby</span>
+          </div>
+          <div class="story-connector">→</div>
+          <div class="story-step standby" id="wf-step-4">
+            <div class="step-num">04</div>
+            <div class="step-body">
+              <b>Act</b>
+              <small>Review, edit & approve action items</small>
+            </div>
+            <span class="step-badge-pill" id="badge-step-4">Standby</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. COMMAND CENTER MAIN GRID -->
+      <div class="dash-grid">
+        <!-- PRIMARY COLUMN: ASK & WORKFLOW RUNNER + CAPTURE -->
+        <div class="col-primary">
+          <!-- ASK & REASONING RUNNER -->
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <span class="eyebrow">COGNITIVE WORKFLOW RUNNER</span>
+                <h2>Ask Your Memory Vault</h2>
+              </div>
+              <span class="sub-badge">8-Stage Audit Trace</span>
+            </div>
+            <label for="askText">YOUR TASK PROMPT OR CONTEXTUAL QUESTION</label>
+            <textarea id="askText" rows="3" placeholder="e.g. What should I prioritize next based on our recorded syncs and notes?"></textarea>
+            
+            <div class="quick-prompts">
+              <span class="q-tag" data-prompt="What should I do next based on my notes?">What should I do next?</span>
+              <span class="q-tag" data-prompt="Summarize my priorities and deadlines">Summarize priorities</span>
+              <span class="q-tag" data-prompt="What key decisions were made recently?">Recent decisions</span>
+              <span class="q-tag" data-prompt="Extract all pending follow-up action items">Extract follow-ups</span>
+            </div>
+            
+            <div class="run-row">
+              <div class="auto-approve-toggle">
+                <input type="checkbox" id="autoApproveCheck" checked>
+                <label for="autoApproveCheck" style="margin:0;font-size:12px;color:var(--text-300);">Auto-approve action items into queue (uncheck to review before saving)</label>
+              </div>
+              <button class="btn btn-accent" id="runWorkflowBtn">
+                <span>Run Autonomous Agent Workflow</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+              </button>
+            </div>
+
+            <!-- WORKFLOW RESULT DRAWER -->
+            <div id="workflowResultBox" class="result-drawer hidden">
+              <div class="result-head">
+                <div class="result-pulse">
+                  <span class="pulse-dot"></span>
+                  <b>WORKFLOW OUTPUT</b>
+                </div>
+                <span class="retrieval-badge" id="retrievalMethodBadge">Semantic Retrieval</span>
+              </div>
+              <div class="result-summary" id="resultSummaryBox"></div>
+              <pre class="result-text" id="resultAnswerText"></pre>
+
+              <!-- PROPOSED ACTION ITEMS GOVERNANCE PANEL (HUMAN IN THE LOOP) -->
+              <div id="proposedActionsGovernanceBox" class="result-section hidden">
+                <div class="governance-head">
+                  <div class="section-label">PROPOSED ACTION ITEMS (GOVERNANCE & APPROVAL)</div>
+                  <button type="button" class="btn btn-outline-sm" id="approveAllProposedBtn">✓ Approve All Proposed Tasks</button>
+                </div>
+                <p class="governance-desc">Review proposed actions generated by agent reasoning. Edit, approve, or dismiss tasks before saving to database.</p>
+                <div class="proposed-list" id="proposedActionsList"></div>
+              </div>
+
+              <!-- PERSISTED ACTION ITEMS -->
+              <div id="resultActionsContainer" class="result-section hidden">
+                <div class="section-label">PERSISTED ACTION ITEMS IN QUEUE</div>
+                <div class="action-list" id="resultActionsList"></div>
+              </div>
+
+              <!-- RECALLED MEMORIES & CITATIONS -->
+              <div id="resultMemoriesContainer" class="result-section">
+                <div class="section-label">RECALLED CONTEXT & MEMORY CITATIONS</div>
+                <div class="recalled-list" id="resultMemoriesList"></div>
+              </div>
+
+              <!-- AUDIT-GRADE 8-STAGE EXECUTION TRACE -->
+              <div id="resultTraceContainer" class="result-section">
+                <div class="section-label">AUDIT-GRADE 8-STAGE EXECUTION TRACE</div>
+                <div class="trace-list" id="resultTraceList"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- UNIFIED QUICK CAPTURE CARD -->
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <span class="eyebrow">INPUT INGESTION</span>
+                <h2>Capture New Conversations & Thoughts</h2>
+              </div>
+              <div class="tab-bar">
+                <button class="c-tab active" data-tab="mic">🎙 Speech Mic</button>
+                <button class="c-tab" data-tab="note">✏️ Note</button>
+                <button class="c-tab" data-tab="omi">📱 Omi Webhook</button>
+              </div>
+            </div>
+
+            <!-- TAB: MICROPHONE -->
+            <div id="tab-mic" class="tab-pane active">
+              <div class="mic-area">
+                <button type="button" class="mic-btn" id="micBtn">
+                  <span class="mic-icon-inner">🎙</span>
+                  <span class="mic-label" id="micLabel">Start Recording</span>
+                </button>
+                <div class="wave-box" id="micWaveBox">
+                  <span class="wv"></span><span class="wv"></span><span class="wv"></span><span class="wv"></span><span class="wv"></span>
+                </div>
+              </div>
+              <div id="micAlert" class="alert-box hidden"></div>
+              <label for="micTranscriptText">LIVE TRANSCRIPT PREVIEW</label>
+              <textarea id="micTranscriptText" rows="3" placeholder="Click 'Start Recording' and speak your thought…"></textarea>
+              <div class="row-actions">
+                <span class="hint">Web Speech API · Attributed honestly as <code>web-speech-mic</code></span>
+                <button class="btn btn-accent" id="saveMicMemoryBtn">Index Spoken Memory →</button>
+              </div>
+            </div>
+
+            <!-- TAB: NOTE -->
+            <div id="tab-note" class="tab-pane hidden">
+              <label for="noteText">NOTE TEXT</label>
+              <textarea id="noteText" rows="3" placeholder="e.g. Discussed database migration timeline with frontend engineer…"></textarea>
+              <div class="row-actions">
+                <span class="hint">Attributed honestly as <code>manual</code> note</span>
+                <button class="btn btn-accent" id="saveNoteBtn">Save Note →</button>
+              </div>
+            </div>
+
+            <!-- TAB: OMI IMPORT -->
+            <div id="tab-omi" class="tab-pane hidden">
+              <div class="row-actions" style="margin-bottom:8px;">
+                <label for="omiText" style="margin:0">OMI TRANSCRIPT OR WEBHOOK JSON</label>
+                <button type="button" class="btn btn-ghost-sm" id="loadSampleTranscriptBtn">⚡ Load Dialogue</button>
+              </div>
+              <textarea id="omiText" rows="3" placeholder="Paste Omi transcript dialogue or official webhook JSON…"></textarea>
+              <div class="row-actions">
+                <span class="hint">Attributed honestly as <code>omi-transcript-import</code> (Duplicate protected)</span>
+                <div class="btn-group">
+                  <button type="button" class="btn btn-outline-sm" id="syncOmiApiBtn">☁ Sync API</button>
+                  <button class="btn btn-accent" id="importOmiBtn">Import Dialogue →</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECONDARY COLUMN: ACTION ITEMS & RECENT MEMORIES -->
+        <div class="col-secondary">
+          <!-- ACTION ITEMS QUEUE (ACT) -->
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <span class="eyebrow">PERSISTED TASKS</span>
+                <h3>Action Items Queue</h3>
+              </div>
+              <span class="count-badge" id="tasksHeaderCount">{{ tasks|length }}</span>
+            </div>
+            <div class="scroll-list" id="overviewTasksList">
+              {% for t in tasks %}
+              <div class="task-row {{ 'task-done' if t.status == 'completed' }}" data-id="{{ t.id }}">
+                <input type="checkbox" class="task-check" {{ 'checked' if t.status == 'completed' }} data-id="{{ t.id }}">
+                <div class="task-body">
+                  <p class="task-title">{{ t.title }}</p>
+                  <div class="task-meta">
+                    <span class="prio prio-{{ t.priority }}">{{ t.priority|upper }}</span>
+                    {% if t.due_date %}<span class="due">📅 {{ t.due_date }}</span>{% endif %}
+                    {% if t.consequential %}<span class="consequential-badge">⚠️ Confirmation Req.</span>{% endif %}
+                    {% if t.source_memory_id %}<span class="source-ref-badge" title="Source Memory ID">Ref: {{ t.source_memory_id[:8] }}</span>{% endif %}
+                  </div>
+                </div>
+                <button type="button" class="icon-btn task-del-btn" data-id="{{ t.id }}" title="Delete">✕</button>
+              </div>
+              {% else %}
+              <div class="empty-state" id="emptyTasks">No action items yet.<br>Ask your memory vault to generate a plan.</div>
+              {% endfor %}
+            </div>
+          </div>
+
+          <!-- RECENT CONTEXTUAL MEMORIES (REMEMBER) -->
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <span class="eyebrow">PERSISTENT MEMORY VAULT</span>
+                <h3>Contextual Memory Stream</h3>
+              </div>
+              <div class="head-actions">
+                <span class="count-badge" id="memoriesHeaderCount">{{ memories|length }}</span>
+                <button type="button" class="btn btn-ghost-sm btn-danger-hover" id="clearVaultOverviewBtn">Clear</button>
+              </div>
+            </div>
+            <div class="scroll-list" id="overviewMemoriesList">
+              {% for m in memories %}
+              <div class="mem-item" data-id="{{ m.id }}">
+                <div class="mem-top">
+                  <span class="mem-type {{ 'type-voice' if 'omi' in m.source or 'mic' in m.source else 'type-note' }}">
+                    {{ 'VOICE' if 'omi' in m.source or 'mic' in m.source else m.kind|upper }}
+                  </span>
+                  <span class="mem-source">{{ m.source }}</span>
+                  <button type="button" class="icon-btn memory-del-btn" data-id="{{ m.id }}" title="Delete">✕</button>
+                </div>
+                <p class="mem-text">{{ m.text }}</p>
+                <div class="mem-footer">
+                  <small>{{ m.created_at[:16].replace('T', ' ') }} UTC</small>
+                </div>
+              </div>
+              {% else %}
+              <div class="empty-state" id="emptyMemories">Your memory vault is quiet.<br>Record a thought or import an Omi transcript.</div>
+              {% endfor %}
+            </div>
+          </div>
+
+          <!-- SYSTEM ARCHITECTURE & EMBEDDING TRANSPARENCY CARD -->
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <span class="eyebrow">SYSTEM ARCHITECTURE</span>
+                <h3>Integration Readiness</h3>
+              </div>
+              <span class="sub-badge">Honest Diagnostics</span>
+            </div>
+            <div class="arch-flow">
+              <div class="arch-node">
+                <b>1. Omi Conversation Ingestion</b>
+                <small>State: <code>{{ service_states.omi.label }}</code> · Webhook / Mic / Import</small>
+              </div>
+              <div class="arch-arrow">↓</div>
+              <div class="arch-node-split">
+                <div class="split-branch">
+                  <b style="color:var(--violet-light);">Qdrant Vector Engine</b>
+                  <small>{{ 'Cloud Active' if qdrant else 'Offline Subword Fallback' }} (384-dim)</small>
+                </div>
+                <div class="split-divider">|</div>
+                <div class="split-branch">
+                  <b style="color:var(--text-300);">SQLite Persistent Vault</b>
+                  <small>Deduplication & Provenance</small>
+                </div>
+              </div>
+              <div class="arch-arrow">↓</div>
+              <div class="arch-node">
+                <b>2. Lyzr Autonomous Reasoning</b>
+                <small>State: <code>{{ service_states.lyzr.label }}</code> · Validated Schema</small>
+              </div>
+              <div class="arch-arrow">↓</div>
+              <div class="arch-node">
+                <b>3. Action Items & Governance</b>
+                <small>Proposed Items → User Review → Persisted Tasks</small>
+              </div>
+            </div>
+            <div class="model-disclosure-strip">
+              <span class="disclosure-tag">Active Embedding:</span>
+              <small>{{ embedding_info.model }}</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═════════════════════════════════════════════════════════ -->
+    <!-- VIEW: VOICE INBOX                                        -->
+    <!-- ═════════════════════════════════════════════════════════ -->
+    <div id="view-voice" class="view-panel hidden">
+      <div class="view-header">
+        <h2>Voice Inbox</h2>
+        <p>Three separated input channels: Omi Webhook Ingestion, Browser Speech Dictation, and Manual Dialogue Import.</p>
+      </div>
+
+      <!-- HOW IT WORKS BANNER -->
+      <div class="how-it-works-banner">
+        <b>💡 How it works:</b> Capture a conversation, normalize the transcript, preserve its source attribution, and send it into the memory pipeline.
+      </div>
+
+      <div class="two-col-grid">
+        <!-- INPUT METHODS -->
+        <div class="card">
+          <div class="card-head">
+            <h3>Voice Input Channels</h3>
+            <span class="sub-badge">Verified Sources</span>
+          </div>
+
+          <!-- METHOD 1: OMI WEBHOOK -->
+          <div class="input-method-box">
+            <div class="method-header">
+              <span class="method-tag tag-omi">SOURCE 1: OMI WEBHOOK INGESTION</span>
+              <span class="method-route">POST /api/ingest/omi</span>
+            </div>
+            <p class="method-desc">Parses official Omi Wearable payloads with <code>transcript_segments</code> and <code>structured.action_items</code>. Automatically detects duplicate conversation IDs.</p>
+            <div class="method-controls">
+              <button class="btn btn-outline-sm" id="voiceStudioOmiWebhookBtn">⚡ Load Sample Omi Webhook JSON</button>
+            </div>
+          </div>
+
+          <!-- METHOD 2: BROWSER SPEECH MIC -->
+          <div class="input-method-box">
+            <div class="method-header">
+              <span class="method-tag tag-mic">SOURCE 2: BROWSER SPEECH DICTATION</span>
+              <span class="method-route">Web Speech API</span>
+            </div>
+            <p class="method-desc">Real-time local speech-to-text. Attributed honestly as <code>web-speech-mic</code> (never claimed as wearable audio).</p>
+            <div class="method-controls">
+              <button class="btn btn-record" id="voiceStudioMicBtn">
+                <span class="pulse-mic-dot"></span>
+                <span id="voiceStudioMicText">Start Speech Dictation</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- METHOD 3: MANUAL IMPORT -->
+          <div class="input-method-box">
+            <div class="method-header">
+              <span class="method-tag tag-import">SOURCE 3: MANUAL DIALOGUE IMPORT</span>
+              <span class="method-route">Normalized Text</span>
+            </div>
+            <p class="method-desc">Paste dialogue or transcript text. Attributed honestly as <code>omi-transcript-import</code>.</p>
+            <div class="method-controls">
+              <button class="btn btn-outline-sm" id="voiceStudioSampleBtn">Load Dialogue Text</button>
+            </div>
+          </div>
+
+          <!-- SHARED TRANSCRIPT EDITOR & OMI PROMPT STUDIO -->
+          <div style="margin-top:14px;">
+            <label for="voiceStudioText">TRANSCRIPT / PAYLOAD WORKSPACE</label>
+            <textarea id="voiceStudioText" class="studio-textarea" rows="6" placeholder="Speech transcribes here in real-time, or paste official Omi webhook JSON…"></textarea>
+            <div class="row-actions">
+              <span class="hint">Attribution is verified before indexing. Duplicate protection active.</span>
+              <div class="btn-group">
+                <button class="btn btn-outline-sm" id="voiceStudioIngestBtn">Ingest via /api/ingest/omi</button>
+                <button class="btn btn-accent" id="voiceStudioSaveBtn">Index Voice Memory →</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- OMI PROMPT-BASED APPS STUDIO -->
+          <div class="omi-prompt-studio-box" style="margin-top:16px;background:rgba(124,58,237,0.06);border:1px solid rgba(139,92,246,0.25);border-radius:12px;padding:16px;">
+            <div class="card-head" style="margin-bottom:10px;">
+              <div>
+                <span class="eyebrow" style="color:var(--violet-light);">OFFICIAL OMI SPECIFICATION</span>
+                <h4 style="margin:2px 0;font-size:15px;color:var(--text-100);">Omi Prompt-Based Apps Runner</h4>
+              </div>
+              <a href="https://docs.omi.me/doc/developer/apps/PromptBased" target="_blank" class="sub-badge" style="text-decoration:none;">Docs ↗</a>
+            </div>
+            <p style="font-size:12px;color:var(--text-300);margin-bottom:12px;">Customize memory processing and agent reasoning using official Omi prompt templates without writing backend code.</p>
+            
+            <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px;">
+              <select id="omiPromptSelect" class="input-flat" style="flex:1;min-width:200px;font-size:13px;padding:8px 12px;background:var(--bg-card);border:1px solid var(--border-soft);color:var(--text-100);border-radius:8px;">
+                <option value="action_item_extractor">Omi Action Item Extractor (Memory Prompt)</option>
+                <option value="meeting_summary">Omi Meeting Summary (Memory Prompt)</option>
+                <option value="project_manager_memory">Omi Project Manager Extractor (Memory Prompt)</option>
+                <option value="fitness_coach">Alex — Fitness Coach (Chat Prompt)</option>
+                <option value="creative_writing">Creative Writing Mentor (Chat Prompt)</option>
+                <option value="project_manager_chat">Project Manager Assistant (Chat Prompt)</option>
+              </select>
+              <div style="display:flex;align-items:center;gap:6px;">
+                <input type="checkbox" id="omiPromptSaveTasks" checked>
+                <label for="omiPromptSaveTasks" style="margin:0;font-size:12px;color:var(--text-300);">Auto-save tasks</label>
+              </div>
+              <button type="button" class="btn btn-accent-sm" id="runOmiPromptBtn">⚡ Run Omi Prompt</button>
+            </div>
+            
+            <!-- PROMPT OUTPUT CONTAINER -->
+            <div id="omiPromptOutputArea" class="hidden" style="margin-top:12px;padding:12px;background:var(--bg-card);border:1px solid var(--border-soft);border-radius:8px;font-size:13px;color:var(--text-200);">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                <b id="omiPromptOutputTitle" style="color:var(--violet-light);">Omi Prompt Output</b>
+                <span id="omiPromptExecutionBadge" class="badge-mode-pill" style="font-size:10px;">Processed</span>
+              </div>
+              <div id="omiPromptOutputContent" style="white-space:pre-wrap;line-height:1.5;margin-bottom:8px;"></div>
+              <div id="omiPromptExtractedTasksList" style="margin-top:8px;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- VOICE RECORDS LIST -->
+        <div class="card">
+          <div class="card-head">
+            <h3>Voice Records in Vault</h3>
+            <span class="sub-badge">VOICE ATTRIBUTED</span>
+          </div>
+          <div class="scroll-list scroll-tall" id="voiceRecordsList"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═════════════════════════════════════════════════════════ -->
+    <!-- VIEW: MEMORY VAULT                                       -->
+    <!-- ═════════════════════════════════════════════════════════ -->
+    <div id="view-vault" class="view-panel hidden">
+      <div class="view-header">
+        <h2>Memory Vault</h2>
+        <p>Searchable multi-modal knowledge store. Qdrant Cloud 384-dimensional vectors + persistent SQLite vault.</p>
+      </div>
+
+      <div class="vault-bar">
+        <input type="text" id="vaultSearchInput" class="vault-search" placeholder="🔍 Search memories (semantic & keyword)…">
+        <div class="filter-pills">
+          <button class="f-pill active" data-filter="all">All</button>
+          <button class="f-pill" data-filter="note">Notes</button>
+          <button class="f-pill" data-filter="transcript">Voice / Transcripts</button>
+          <button class="f-pill" data-filter="decision">Decisions</button>
+        </div>
+        <button class="btn btn-ghost-sm btn-danger-hover" id="vaultClearBtn">Clear Vault</button>
+      </div>
+
+      <div class="vault-grid" id="vaultCardsGrid"></div>
+
+      <!-- PRIVACY NOTICE -->
+      <div class="privacy-notice">
+        <b>🔒 Privacy & Storage Notice:</b> Transcripts and notes are stored locally in SQLite (<code>echomind.db</code>). When Qdrant Cloud or Lyzr Studio credentials are configured, memory embeddings and agent prompts are securely transmitted to their respective API endpoints over TLS. No third-party tracking or unconsented external data sharing.
+      </div>
+    </div>
+
+    <!-- ═════════════════════════════════════════════════════════ -->
+    <!-- VIEW: AGENT WORKFLOWS (EXECUTION INSPECTOR)               -->
+    <!-- ═════════════════════════════════════════════════════════ -->
+    <div id="view-workflows" class="view-panel hidden">
+      <div class="view-header">
+        <h2>Agent Workflow Inspector</h2>
+        <p>Observable timeline of input normalization, vector retrieval, Lyzr reasoning, and action generation.</p>
+      </div>
+      <div class="wf-list" id="workflowsInspectorList"></div>
+    </div>
+
+    <!-- ═════════════════════════════════════════════════════════ -->
+    <!-- VIEW: ACTION ITEMS                                       -->
+    <!-- ═════════════════════════════════════════════════════════ -->
+    <div id="view-tasks" class="view-panel hidden">
+      <div class="view-header">
+        <h2>Action Items & Tasks</h2>
+        <p>Tasks automatically extracted from agent reasoning or created manually. Persisted directly in SQLite.</p>
+      </div>
+      <div class="card task-creator">
+        <div class="task-add-row">
+          <input type="text" id="manualTaskTitle" class="input-flat" placeholder="Create a new task…">
+          <select id="manualTaskPriority" class="select-flat">
+            <option value="high">High</option>
+            <option value="medium" selected>Medium</option>
+            <option value="low">Low</option>
+          </select>
+          <input type="text" id="manualTaskDue" class="input-flat input-short" placeholder="Due date (optional)">
+          <button class="btn btn-accent" id="manualTaskBtn">Add Task +</button>
+        </div>
+      </div>
+      <div class="two-col-grid">
+        <div class="card">
+          <div class="card-head">
+            <h3>Pending Tasks</h3>
+            <span class="count-badge" id="pendingTasksBadge">0</span>
+          </div>
+          <div class="scroll-list scroll-tall" id="tasksViewPendingList"></div>
+        </div>
+        <div class="card">
+          <div class="card-head">
+            <h3>Completed Tasks</h3>
+            <span class="count-badge" id="completedTasksBadge">0</span>
+          </div>
+          <div class="scroll-list scroll-tall" id="tasksViewCompletedList"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═════════════════════════════════════════════════════════ -->
+    <!-- VIEW: SYSTEM DIAGNOSTICS & SETTINGS                      -->
+    <!-- ═════════════════════════════════════════════════════════ -->
+    <div id="view-settings" class="view-panel hidden">
+      <div class="view-header">
+        <h2>System Diagnostics & Troubleshooting</h2>
+        <p>Technical failure translations, live connectivity checks, and configuration guides.</p>
+      </div>
+
+      <div class="two-col-grid">
+        <!-- DIAGNOSTICS OUTPUT -->
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <span class="eyebrow" style="color:var(--violet-light);">INTEGRATION HEALTH CHECK</span>
+              <h3>Live Service Connections</h3>
+            </div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+              <button class="btn btn-primary-sm" id="runDiagnosticsBtn">⚡ Ping All</button>
+            </div>
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 14px 0;">
+            <button class="btn btn-outline-sm" id="testQdrantBtn">Test Qdrant Connection</button>
+            <button class="btn btn-outline-sm" id="testLyzrBtn">Test Lyzr Agent</button>
+            <button class="btn btn-outline-sm" id="testOmiBtn">Test Omi Connection</button>
+            <button class="btn btn-outline-sm" id="testDevFixtureBtn">Load Test Fixture (Dev)</button>
+          </div>
+          <div id="diagnosticsOutput" class="diag-output">
+            <p class="sub-text">Click "Ping All" or individual test buttons above to execute real authenticated requests against configured services.</p>
+          </div>
+        </div>
+
+        <!-- EXPLANATIONS & CORRECTIVE ACTIONS -->
+        <div class="card">
+          <div class="card-head">
+            <h3>Integration Troubleshooting Guide</h3>
+            <span class="sub-badge">Problem Translation</span>
+          </div>
+
+          <div class="diag-guide-item">
+            <b style="color:var(--violet-light);">Omi Wearable Ingestion:</b>
+            <p><b>What happened:</b> Transcript ingestion requires either live webhook payloads, speech mic, or manual text paste.</p>
+            <p><b>Why it matters:</b> Context cannot be retained without raw dialogue entering the pipeline.</p>
+            <p><b>How to fix:</b> Configure <code>OMI_API_KEY</code> in <code>.env</code> for direct user sync, or post payloads to <code>/api/ingest/omi</code>.</p>
+            <p><b>Fallback status:</b> Browser Web Speech API and manual paste function seamlessly without keys.</p>
+          </div>
+
+          <div class="diag-guide-item">
+            <b style="color:var(--violet-light);">Qdrant Cloud Vectors:</b>
+            <p><b>What happened:</b> Vector memory requires an active Qdrant cluster with 384-dimensional cosine metric.</p>
+            <p><b>Why it matters:</b> Cloud vector similarity allows rapid multi-thousand memory indexing.</p>
+            <p><b>How to fix:</b> Create a cluster at cloud.qdrant.io, paste URL and API key into <code>.env</code>, and restart.</p>
+            <p><b>Fallback status:</b> Local 384-dim semantic vector cosine search + SQLite lexical search actively running.</p>
+          </div>
+
+          <div class="diag-guide-item">
+            <b style="color:var(--violet-light);">Lyzr Agent Studio:</b>
+            <p><b>What happened:</b> External agent reasoning requires <code>LYZR_API_KEY</code> and <code>LYZR_AGENT_ID</code>.</p>
+            <p><b>Why it matters:</b> Live agent execution dispatches prompts to Lyzr Studio's inference endpoint.</p>
+            <p><b>How to fix:</b> Create an agent at studio.lyzr.ai, configure <code>LYZR_API_KEY</code> and <code>LYZR_AGENT_ID</code> in <code>.env</code>.</p>
+            <p><b>Fallback status:</b> Local autonomous multi-stage planner is verified and active.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- OMI DEVELOPER ECOSYSTEM & MCP TOOLS INSPECTOR -->
+      <div class="card" style="margin-top:20px;">
+        <div class="card-head">
+          <div>
+            <span class="eyebrow" style="color:var(--violet-light);">OFFICIAL DEVELOPER INTEGRATION CONTRACT</span>
+            <h3>Omi Developer Ecosystem (REST API, MCP Tools & CLI)</h3>
+          </div>
+          <span class="sub-badge">docs.omi.me Reference</span>
+        </div>
+        <p style="font-size:13px;color:var(--text-300);margin-bottom:16px;">
+          EchoMind AI implements the official Omi Developer specifications across three distinct interfaces:
+        </p>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:16px;">
+          <!-- 1. REST DEVELOPER API -->
+          <div style="background:var(--bg-card);border:1px solid var(--border-soft);border-radius:10px;padding:14px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+              <b style="color:var(--violet-light);font-size:14px;">1. Developer REST API</b>
+              <span class="badge-mode-pill">100 req/min</span>
+            </div>
+            <p style="font-size:12px;color:var(--text-300);margin-bottom:10px;">
+              Direct HTTP access at <code>https://api.omi.me</code> requiring <code>Authorization: Bearer omi_dev_...</code>.
+            </p>
+            <ul style="font-size:12px;color:var(--text-200);padding-left:18px;margin-bottom:12px;line-height:1.6;">
+              <li><code>/v1/dev/user/conversations</code> (transcripts)</li>
+              <li><code>/v1/dev/user/memories</code> (timeless facts)</li>
+              <li><code>/v1/dev/user/action-items</code> (extracted tasks)</li>
+            </ul>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+              <button type="button" class="btn btn-outline-sm" id="syncOmiConvsBtn">Sync Convs</button>
+              <button type="button" class="btn btn-outline-sm" id="syncOmiMemsBtn">Sync Mems</button>
+              <button type="button" class="btn btn-outline-sm" id="syncOmiTasksBtn">Sync Tasks</button>
+            </div>
+          </div>
+
+          <!-- 2. MODEL CONTEXT PROTOCOL (MCP) -->
+          <div style="background:var(--bg-card);border:1px solid var(--border-soft);border-radius:10px;padding:14px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+              <b style="color:var(--cyan);font-size:14px;">2. Model Context Protocol</b>
+              <span class="badge-mode-pill">Claude / Cursor</span>
+            </div>
+            <p style="font-size:12px;color:var(--text-300);margin-bottom:10px;">
+              Standard MCP tools at <code>/api/mcp/tools</code> enabling external AI assistants to interact with EchoMind data.
+            </p>
+            <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:12px;">
+              <code style="font-size:11px;background:rgba(255,255,255,0.05);padding:2px 6px;border-radius:4px;">get_memories</code>
+              <code style="font-size:11px;background:rgba(255,255,255,0.05);padding:2px 6px;border-radius:4px;">search_memories</code>
+              <code style="font-size:11px;background:rgba(255,255,255,0.05);padding:2px 6px;border-radius:4px;">create_memory</code>
+              <code style="font-size:11px;background:rgba(255,255,255,0.05);padding:2px 6px;border-radius:4px;">get_action_items</code>
+              <code style="font-size:11px;background:rgba(255,255,255,0.05);padding:2px 6px;border-radius:4px;">get_user_profile</code>
+            </div>
+            <button type="button" class="btn btn-outline-sm" id="testMcpToolBtn">⚡ Test MCP search_memories</button>
+          </div>
+
+          <!-- 3. OMI CLI -->
+          <div style="background:var(--bg-card);border:1px solid var(--border-soft);border-radius:10px;padding:14px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+              <b style="color:var(--accent-glow);font-size:14px;">3. omi-cli Terminal Interface</b>
+              <span class="badge-mode-pill">pipx install omi-cli</span>
+            </div>
+            <p style="font-size:12px;color:var(--text-300);margin-bottom:8px;">
+              Scoped, JSON-emitting terminal commands for shell pipelines and CI harnesses:
+            </p>
+            <div style="background:rgba(0,0,0,0.3);border-radius:6px;padding:8px;font-family:monospace;font-size:11px;color:var(--text-200);line-height:1.5;">
+              <div>omi --json memory list</div>
+              <div style="color:var(--violet-light);">cat notes.md | omi conv create</div>
+              <div>omi --json action-item list --open</div>
+            </div>
+          </div>
+        </div>
+
+        <div id="mcpTestOutput" class="hidden" style="margin-top:14px;padding:12px;background:rgba(0,0,0,0.4);border:1px solid var(--border-soft);border-radius:8px;font-family:monospace;font-size:12px;color:var(--text-200);white-space:pre-wrap;"></div>
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="app-footer">
+      <span>ECHOMIND AI 2.2 <b>·</b> AUTONOMOUS AGENT WORKSPACE</span>
+      <span>HiDevs Hackathon: Stop Prompting. Code Solo Agents.</span>
+    </footer>
+  </main>
+</div>
+
+<!-- TOAST -->
+<div id="toast" class="toast"></div>
+
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
