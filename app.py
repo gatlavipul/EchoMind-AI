@@ -24,7 +24,9 @@ from services.task_service import (
 load_dotenv()
 
 app = Flask(__name__)
-DB = os.getenv("SQLITE_PATH", "echomind.db")
+if os.environ.get("VERCEL"):
+    os.environ.setdefault("SQLITE_PATH", "/tmp/echomind.db")
+DB = os.getenv("SQLITE_PATH", "/tmp/echomind.db" if os.environ.get("VERCEL") else "echomind.db")
 COLLECTION = os.getenv("QDRANT_COLLECTION", "echomind_memories")
 
 # ============================================================================
